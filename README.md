@@ -69,3 +69,21 @@ Run Jupyter Notebook and open the **analysis_nb.ipynb** file
 
 
 ### 4. Example output
+
+Correlation Matrix
+
+<img src="https://github.com/sunchang0124/DutchHealthcareCost/raw/master/example_output/Output_CM/2011/CM_0To4.png" width="720">
+
+
+
+
+Stacked area plot - sum of costs
+
+<img src="https://github.com/sunchang0124/DutchHealthcareCost/raw/master/example_output/Output_Stacked/StackedArea_2011.png" width="720">
+
+
+
+
+Distribution plot
+
+<img src="https://github.com/sunchang0124/DutchHealthcareCost/raw/master/example_output/Output_Dist/2011/Dist_70To79.png" width="720">
