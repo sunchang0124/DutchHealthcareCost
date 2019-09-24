@@ -76,7 +76,7 @@ for i in loop:
         func.dist_Plot(df_avg,'SUM', i, year)
 
 ### Only for the Stack plot ###
-if input['stacked_area'] == 'true':
+if input['stacked_area'] == True:
     loop = list(range(0,90,1))
     df_stack = pd.DataFrame()
     for i in loop:
