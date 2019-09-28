@@ -10,4 +10,4 @@ COPY func.py func.py
 
 RUN pip install pandas numpy sklearn seaborn bokeh
 
-CMD ["python", "requestBasicInfo.py"]
+CMD ["python", "analysis_singleYEAR.py"]

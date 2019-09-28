@@ -1,0 +1,41 @@
+{
+    "data_fileList": ["Vektis2011.csv","Vektis2012.csv","Vektis2013.csv","Vektis2014.csv",
+                        "Vektis2015.csv","Vektis2016.csv","Vektis2017.csv"],
+
+    "postcode": "ALL",
+
+    "selected_features": ["GESLACHT", "AANTAL_BSN","POSTCODE_3","AANTAL_VERZEKERDEJAREN","KOSTEN_MEDISCH_SPECIALISTISCHE_ZORG",
+                        "KOSTEN_HUISARTS_INSCHRIJFTARIEF", "KOSTEN_HUISARTS_CONSULT","KOSTEN_HUISARTS_OVERIG", 
+                        "KOSTEN_FARMACIE", "KOSTEN_MONDZORG", "KOSTEN_ZIEKENVERVOER_ZITTEND", "KOSTEN_ZIEKENVERVOER_LIGGEND", 
+                        "KOSTEN_GRENSOVERSCHRIJDENDE_ZORG","KOSTEN_PARAMEDISCHE_ZORG_FYSIOTHERAPIE", 
+                        "KOSTEN_PARAMEDISCHE_ZORG_OVERIG","KOSTEN_OVERIG","KOSTEN_GERIATRISCHE_REVALIDATIEZORG",
+                        "KOSTEN_VERPLEGING_EN_VERZORGING","KOSTEN_EERSTELIJNS_PSYCHOLOGISCHE_ZORG","KOSTEN_TWEEDELIJNS_GGZ",
+                        "KOSTEN_SPECIALISTISCHE_GGZ","KOSTEN_GENERALISTISCHE_BASIS_GGZ","KOSTEN_LANGDURIGE_GGZ"],
+
+    "name_features": ["SEX", "BSNs", "Postcode", "Insured_year","medical_specialist", "GP_registration",
+                        "GP_consult","GP_others","pharmacy","dental","transport_seat", "transport_land",
+                        "abroad","paramedical_phy","paramedical_others", "others","rehabilitation","nursing",
+                        "firstLinePsy","secondLineGGZ","specialGGZ","basicGGZ","longGGZ"],
+
+    "ageRange": [[0,2],[3,6],[7,10],[11,14],[15,18],[19,22],[23,26],[27,30],[31,34],[35,39],
+                    [40,44],[45,50],[51,55],[56,60],[61,65],[66,70],[71,75],[76,80],[81,85],[86,90]],
+            
+    "ageRange_string": ["[0, 2]","[3, 6]","[7, 10]","[11, 14]","[15, 18]","[19, 22]","[23, 26]",
+                        "[27, 30]","[31, 34]","[35, 39]","[40, 44]","[45, 50]","[51, 55]","[56, 60]",
+                        "[61, 65]","[66, 70]","[71, 75]","[76, 80]","[81, 85]","[86, 90]"],
+
+    "HeatMap_all_dategories_different_years": true,
+
+    "HeatMap_all_dategories_different_ages": true,
+
+    "HeatMap_sum_cost": true,
+
+    "HeatMap_single_category_cost": true,
+
+    "start_ageGroup": 0,
+    "end_ageGroup": 6,
+    "one_cate": "GP",
+    "LinePlot_sum_cost": true,
+
+    "LinePlot_single_category_cost": true
+}

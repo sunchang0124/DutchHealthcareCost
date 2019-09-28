@@ -296,3 +296,266 @@ def plot_numNum(df,featureSet,file):
 
     print('Numerical-numerical feature plot is done')
     plt.clf()
+    
+
+
+
+####################################################
+### Function for prepare datasets from all years ###
+####################################################
+
+def prepare (df, col, name_col, postcode):
+    ### Select features you are interested in ###
+    ### Feature descriptions are provided by https://www.vektis.nl/intelligence/open-data ###
+    # KOSTEN_MEDISCH_SPECIALISTISCHE_ZORG
+    # col = ["GESLACHT", "AANTAL_BSN","POSTCODE_3","AANTAL_VERZEKERDEJAREN","KOSTEN_MEDISCH_SPECIALISTISCHE_ZORG",\
+    #        "KOSTEN_HUISARTS_INSCHRIJFTARIEF", "KOSTEN_HUISARTS_CONSULT","KOSTEN_HUISARTS_OVERIG", \
+    #        "KOSTEN_FARMACIE", "KOSTEN_MONDZORG", "KOSTEN_ZIEKENVERVOER_ZITTEND", "KOSTEN_ZIEKENVERVOER_LIGGEND", \
+    #        "KOSTEN_GRENSOVERSCHRIJDENDE_ZORG","KOSTEN_PARAMEDISCHE_ZORG_FYSIOTHERAPIE", \
+    #        "KOSTEN_PARAMEDISCHE_ZORG_OVERIG","KOSTEN_OVERIG","KOSTEN_GERIATRISCHE_REVALIDATIEZORG",\
+    #        "KOSTEN_VERPLEGING_EN_VERZORGING","KOSTEN_EERSTELIJNS_PSYCHOLOGISCHE_ZORG","KOSTEN_TWEEDELIJNS_GGZ",\
+    #        "KOSTEN_SPECIALISTISCHE_GGZ","KOSTEN_GENERALISTISCHE_BASIS_GGZ","KOSTEN_LANGDURIGE_GGZ"]
+
+    ### As some features are available in some years, we need to check before select certain features ###
+    data_col = df.columns
+    present = []
+    for c in col:
+        if c in data_col:
+            present.append(col.index(c))
+
+    df_vektis = df[np.array(col)[present]]
+
+    ### Give new columns names which are understandable for yourself ###
+    # medical_specialist
+    # name_col = ["SEX", "BSNs", "Postcode", "Insured_year","medical_specialist", "GP_registration",\
+    #             "GP_consult","GP_others","pharmacy","dental","transport_seat", "transport_land",\
+    #             "abroad","paramedical_phy","paramedical_others", "others","rehabilitation","nursing",\
+    #             "firstLinePsy","secondLineGGZ","specialGGZ","basicGGZ","longGGZ"]
+    
+    new_col = np.array(name_col)[present]
+    df_vektis.columns = new_col
+
+    ### Change the types (int,float,str --> float) of values in the AGE column ###
+    age = []
+    for i in df['LEEFTIJDSKLASSE']:
+        if type(i) == str:
+            try:
+                age.append(float(i))
+            except:
+                age.append(float(i[:-1]))
+        elif type(i) == float:
+            age.append(i)
+        elif type(i) == int:
+            age.append(i)
+
+    ### Add new age column ###
+    df_vektis['AGE'] = age
+    ### Remove the first row (sum) ###
+    df_vektis = df_vektis[1:]
+    
+    ### search for certain area? ###
+    if postcode == "ALL":
+        df_vektis_analysis = df_vektis
+    elif 100 < postcode and postcode < 1000:
+        df_vektis_analysis = df_vektis[df_vektis['Postcode']==postcode]
+    else:
+        print("Please give a postcode greater than 100 and less than 1000")
+    len(df_vektis_analysis)
+    
+    return df_vektis_analysis
+
+
+##############################################################################
+### 1. All categories in different years from the same age group (heatmap) ###
+##############################################################################
+def allCategoriesDiffYear (df_mean_allYears,ageRange_string,years,categories,fileName):
+    for elem in ageRange_string:
+        avg_cost = []
+        year_plt = []
+        cate_plt = []
+        for i in categories:
+            for j in years:
+                year_plt.append(j)
+                cate_plt.append(i)
+
+                if i in list(df_mean_allYears[elem][j].keys()):
+                    avg_cost.append(df_mean_allYears[elem][j][i])
+                else:
+                    avg_cost.append(0)
+        cost_plt = pd.DataFrame.from_records([cate_plt,year_plt,avg_cost]).transpose()
+        cost_plt.columns = ['category','Year','Cost']
+
+        sns.set()
+
+        cost_df_pivot = cost_plt.pivot('category','Year','Cost')
+        cost_df_pivot.fillna(value=np.nan, inplace=True)
+
+        # Draw a heatmap with the numeric values in each cell
+        f, ax = plt.subplots(figsize=(13, 10))
+        sns.heatmap(cost_df_pivot, annot=True, fmt="0.4g",linewidths=.5, ax=ax, vmax=500,\
+                       cmap=sns.cubehelix_palette(10), cbar=True)
+        plt.title("Costs in different categories between 2011-2016 in age group of %s"%elem)
+
+        filename = 'Output_Vektis/withMedSpecialist/%s_Category_Years.png'%ageRange_string[elem]
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename)
+
+
+##############################################################################
+### 2. All categories in the same year from different age groups (heatmap) ###
+##############################################################################
+def allCategoriesDiffAge (df_mean_allYears,ageRange_string,years,categories,fileName):
+    for elem in years:
+        avg_cost = []
+        ages_plt = []
+        cate_plt = []
+        for i in categories:
+            for j in ageRange_string:
+                ages_plt.append(j)
+                cate_plt.append(i)
+
+                if i in list(df_mean_allYears[j][elem].keys()):
+                    avg_cost.append(df_mean_allYears[j][elem][i])
+                else:
+                    avg_cost.append(0)
+        cost_plt = pd.DataFrame.from_records([cate_plt,ages_plt,avg_cost]).transpose()
+        cost_plt.columns = ['category','Age range','Cost']
+
+        sns.set()
+
+        cost_df_pivot = cost_plt.pivot('category','Age range','Cost')
+        cost_df_pivot.fillna(value=np.nan, inplace=True)
+
+        # Draw a heatmap with the numeric values in each cell
+        f, ax = plt.subplots(figsize=(13, 10))
+        sns.heatmap(cost_df_pivot, annot=True, fmt="0.4g",linewidths=.5, ax=ax, vmax=500,\
+                       cmap=sns.cubehelix_palette(10), cbar=True)
+        plt.title("Costs in different categories from different age groups in %s"%fileName)
+
+        filename = 'Output_Vektis/%s_Category_Change.png'%fileName
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename)
+
+
+#################################################
+### 3. Sum for different age groups and years ###
+#################################################
+def SumCost_pivot (df_mean_allYears,ageRange_string,years,categories):
+    age_plt = []
+    year_plt = []
+    sum_plt = []
+    for i in ageRange_string:
+        for j in years:
+            age_plt.append(i)
+            year_plt.append(j)
+            sum_plt.append(df_mean_allYears[i][j].sum())
+
+    sum_cost_plt = pd.DataFrame.from_records([age_plt,year_plt,sum_plt]).transpose()
+    sum_cost_plt.columns = ['Age range','Year','Sum of costs']
+
+    sum_cost_plt_pivot = sum_cost_plt.pivot('Age range','Year','Sum of costs')
+    sum_cost_plt_pivot = sum_cost_plt_pivot.reindex(ageRange_string)
+    sum_cost_plt_pivot.fillna(value=np.nan, inplace=True)
+    
+    return sum_cost_plt_pivot
+
+def SumCost_heatmap(sum_cost_plt_pivot):
+    sns.set()
+
+    # Draw a heatmap with the numeric values in each cell
+    f, ax = plt.subplots(figsize=(12, 9))
+    sns.heatmap(sum_cost_plt_pivot, annot=True, fmt="0.4g",linewidths=.5, ax=ax, vmax=7000,\
+                   cmap=sns.cubehelix_palette(10), cbar=True)
+    plt.title("Sum of costs in different years from different age groups")
+    plt.show()
+
+    filename = 'Output_Vektis/SumVisualization/SumofCost_FULL.png'
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    plt.savefig(filename)
+
+##############################
+######## Sum line plot #######
+##############################
+def Sumcost_line (sum_cost_plt_pivot,ageRange_string, start_ageGroup, end_ageGroup):
+#     start_ageGroup = 15
+#     end_ageGroup = 20
+
+    plt.subplots(figsize=(12, 9))
+    palette = sns.color_palette("muted")
+    p = sns.lineplot(data=sum_cost_plt_pivot[start_ageGroup:end_ageGroup].transpose(),\
+                     linewidth=2.5,legend='full',dashes=False) 
+
+    filename = 'Output_Vektis/SumVisualization/from %s - to %s.png'%(ageRange_string[start_ageGroup],
+                                                                ageRange_string[end_ageGroup-1])
+    plt.xlabel('Year')
+    # plt.ylim(1450,3800)
+    plt.ylabel('Sum of costs')
+    plt.title('Sum of costs from %s - to %s between 2011-2017' %(ageRange_string[start_ageGroup],
+                                                                ageRange_string[end_ageGroup-1]))
+    plt.legend(loc='upper right')
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    plt.savefig(filename)
+
+#################################################
+######## 4. Single category plot (heatmap) ######
+#################################################
+def CatCost_pivot(df_mean_allYears,ageRange_string,years,categories,one_cate):
+    age_plt = []
+    year_plt = []
+    sglCat_plt = []
+    for i in ageRange_string:
+        for j in years:
+            age_plt.append(i)
+            year_plt.append(j)
+            if one_cate in df_mean_allYears[i][j].keys():
+                sglCat_plt.append(df_mean_allYears[i][j][one_cate])
+    #         if '1stPsy2ndGGZ' in df_mean_allYears[i][j].keys():
+    #             medSpe_plt.append(df_mean_allYears[i][j]['1stPsy2ndGGZ']) # medical_specialist
+    #         elif 'GGZ' in df_mean_allYears[i][j].keys():
+    #             medSpe_plt.append(df_mean_allYears[i][j]['GGZ'])
+
+    sglCat_cost_plt = pd.DataFrame.from_records([age_plt,year_plt,sglCat_plt]).transpose()
+    sglCat_cost_plt.columns = ['Age range','Year','Cost from %s'%one_cate] #Medical Specialists
+    
+    sglCat_cost_plt_pivot = sglCat_cost_plt.pivot('Age range','Year','Cost from %s'%one_cate) #Medical Specialists
+    sglCat_cost_plt_pivot = sglCat_cost_plt_pivot.reindex(ageRange_string)
+    sglCat_cost_plt_pivot.fillna(value=np.nan, inplace=True)
+    
+    return sglCat_cost_plt_pivot
+
+def Catcost_heatmap(sglCat_cost_plt_pivot, one_cate):
+    sns.set()
+
+    # Draw a heatmap with the numeric values in each cell
+    f, ax = plt.subplots(figsize=(12, 9))
+    sns.heatmap(sglCat_cost_plt_pivot, annot=True, fmt="0.4g",linewidths=.5, ax=ax, \
+                cmap=sns.cubehelix_palette(10), cbar=True)
+    plt.title("Costs from %s in different years from different age groups" %one_cate)
+
+    filename = 'Output_Vektis/%s/%s.png' %(one_cate,one_cate)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    plt.savefig(filename)
+
+
+##########################################
+####### 5. Sum line plot (heatmap) #######
+##########################################
+def Catcost_line(sglCat_cost_plt_pivot,ageRange_string, start_ageGroup,end_ageGroup, one_cate):
+#     start_ageGroup = 14
+#     end_ageGroup = 20
+
+    plt.subplots(figsize=(12, 9))
+    p = sns.lineplot(data=sglCat_cost_plt_pivot[start_ageGroup:end_ageGroup].transpose(), \
+                     linewidth=2.5,legend='full',dashes=False) 
+    filename = 'Output_Vektis/%s/from %s to %s.png' \
+    %(one_cate, ageRange_string[start_ageGroup],ageRange_string[end_ageGroup-1])
+
+    plt.ylim(35,135)
+    plt.legend(loc='upper right')
+    plt.xlabel('Age range')
+    plt.ylabel('Costs from %s Package' %one_cate)
+    plt.title('Costs from %s from %s to %s '\
+              %(one_cate, ageRange_string[start_ageGroup],ageRange_string[end_ageGroup-1]))
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    plt.savefig(filename)
+    # plt.show()
