@@ -17,18 +17,57 @@ One of my PhD research projects is to analyze diabetes patients healthcare costs
   - For Ubuntu [Install](https://docs.docker.com/install/linux/docker-ce/ubuntu/#set-up-the-repository)
   - For Windows [Install](https://hub.docker.com/editions/community/docker-ce-desktop-windows)
   - For Mac [Install](https://hub.docker.com/editions/community/docker-ce-desktop-mac)
+  
 - Or Python 3.6 (with pip as dependency manager) and Jupyter Notebook
 
-### 1. Run with Docker 
+  
+
+### 1. Or run in Python (version 3.6+)
+
+- Analyze data from a single year: configure **request_SingleYear.json** file, run the following line in the terminal:
+
+  ```
+  python request_SingleYear.py
+  ```
+
+  
+
+- Analyze data from all years: configure **request_SingleYear.json** file, run the following line in the terminal:
+
+  ```
+  python request_OverYears.py
+  ```
+
+  
+
+### 2. Or run in Jupyter Notebook
+
+- Analyze data from a single year: **analysis_SingleYear.ipynb**
+- Analyze data from all years: **analysis_OverYears.ipynb**
+
+
+
+### 3. Pull Docker Images
+
+```shell
+docker pull sophia921025/healthcare_singleyear:v0.1 # Analysis on single year dataset
+
+docker pull sophia921025/healthcare_multipleyears:v0.1 # Analysis on multiple (all) year datasets
+```
+
+
+
+### 4. Locally build Docker Image
 
 First, build a Docker Image - in the folder (where the Dockerfile is) and run the following line in terminal:
 
 ```shell
-docker build -t healthcost .   
+docker build -t docker build -t healthcost .   
+# "healthcost" can be replaced by any name you like but no capital letters .   
 # "healthcost" can be replaced by any name you like but no capital letters
 ```
 
-Then, configure the **request.json** file
+Then, configure the **request_SingleYear.json** file
 
 Finally, run the following line in terminal:
 
@@ -38,7 +77,7 @@ Finally, run the following line in terminal:
 docker run --rm \
 -v "$(pwd)/output:/output" \
 -v "$(pwd)/Vektis2011.csv:/Vektis2011.csv" \
--v "$(pwd)/request.json:/request.json" healthcost
+-v "$(pwd)/request_SingleYear.json:/request_SingleYear.json" healthcost 
 ```
 
 - Windows:
@@ -47,28 +86,21 @@ docker run --rm \
 docker run --rm \
 -v "%cd%/output:/output" \
 -v "%cd%/Vektis2011.csv:/Vektis2011.csv" \
--v "%cd%/request.json:/request.json" healthcost
+-v "%cd%/request_SingleYear.json:/request_SingleYear.json" healthcost
 ```
-
-
-
-### 2. Or run in Python (version 3.6+)
-
-After configuring **request.json** file, run the following line in the terminal:
-
-```shell
-python requestBasicInfo.py
-```
-
-
-
-### 3. Or run in Jupyter Notebook
-
-Run Jupyter Notebook and open the **analysis_nb.ipynb** file
 
 
 
 ### 4. Example output
+
+Heat map - sum of costs
+
+<img src="https://github.com/sunchang0124/DutchHealthcareCost/raw/master/example_output/SumofCost.png" width="720">
+
+Line plot - sum of costs
+
+<img src="https://github.com/sunchang0124/DutchHealthcareCost/raw/master/example_output/SumofCost_line.png" width="720">
+
 
 Correlation Matrix
 

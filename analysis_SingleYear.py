@@ -6,7 +6,7 @@ import func
 import numpy as np
 import pandas as pd
 
-with open('request.json', 'r') as f:
+with open('request_SingleYear.json', 'r') as f:
     input = json.load(f)
 
 file = input['data_file']

@@ -87,7 +87,7 @@ def corr_Matrix(df, age_range, year):
     print('Correlation Matrix plot is done')
     plt.clf()
 
-#######################################
+########################################
 ### Function for plotting Pie Chart ###
 #######################################
 def merge(df):
@@ -110,9 +110,16 @@ def merge(df):
         df_merge['transport'] = df['transport_seat']+df['transport_land']
         df_merge = df_merge.drop(['transport_seat','transport_land'],axis=1)
         
-    if 'basicGGZ' in merged_col and 'longGGZ' in merged_col:
-        df_merge['GGZ'] = df['basicGGZ']+df['longGGZ']
-        df_merge = df_merge.drop(['basicGGZ', 'longGGZ'],axis=1)
+    if 'basicGGZ' in merged_col and 'specialGGZ' in merged_col:
+        df_merge['GGZ'] = df['basicGGZ']+df['specialGGZ']
+        df_merge = df_merge.drop(['basicGGZ', 'specialGGZ'],axis=1)
+    elif 'basicGGZ' in merged_col and 'longGGZ' in merged_col and 'specialGGZ' in merged_col:
+        df_merge['GGZ'] = df['basicGGZ']+df['longGGZ']+df['specialGGZ']
+        df_merge = df_merge.drop(['basicGGZ', 'longGGZ', 'specialGGZ'],axis=1)
+
+    if 'firstLinePsy' in merged_col and 'secondLineGGZ' in merged_col :
+        df_merge['1stPsy2ndGGZ'] = df['firstLinePsy']+df['secondLineGGZ']
+        df_merge = df_merge.drop(['firstLinePsy', 'secondLineGGZ'],axis=1)
         
     if 'paramedical_phy' in merged_col and 'paramedical_others' in merged_col:
         df_merge['paramedical'] = df['paramedical_phy']+df['paramedical_others']
@@ -120,7 +127,7 @@ def merge(df):
     
     merged_col_new = list(df_merge.columns)
     full_col = ['medical_specialist','GP','pharmacy','dental','transport','abroad','paramedical', \
-                 'others', 'firstLinePsy', 'GGZ','rehabilitation','nursing']
+                 'others', '1stPsy2ndGGZ', 'GGZ','rehabilitation','nursing']
     order_col = []
     for i in full_col:
         if i in merged_col_new:
@@ -253,7 +260,7 @@ def groupAgeRange(df_vektis, age_range, df_stack):
         df_vektis_aged = df_vektis[df_vektis['AGE']==age_range]
     else:
         df_vektis_aged = df_vektis[age_range[0]<=df_vektis['AGE']]
-        df_vektis_aged = df_vektis_aged[df_vektis['AGE']<=age_range[1]]
+        df_vektis_aged = df_vektis_aged[df_vektis['AGE']<age_range[1]]
         print("The number of insured people between %d to %d: " %(age_range[0],age_range[1]), len(df_vektis_aged))
 #     print("The gender balance: ", Counter(df_vektis_aged['SEX']))
 
@@ -261,8 +268,9 @@ def groupAgeRange(df_vektis, age_range, df_stack):
     ### so we need to calculate the average costs for per insured person
     df_avg = df_vektis_aged[['SEX','AGE']]
     col = df_vektis_aged.columns
-    for i in range(2, len(col)):
-        df_avg[col[i]] = df_vektis_aged[col[i]]/df_vektis_aged['BSNs']
+    for i in range(0, len(col)):
+        if col[i] != 'SEX' and col[i] != 'AGE' and col[i] != 'BSNs' and col[i] != 'Insured_year':
+            df_avg[col[i]] = (df_vektis_aged[col[i]]/df_vektis_aged['BSNs']) / (df_vektis_aged['Insured_year']/df_vektis_aged['BSNs'])
 
     ### Add one column - total healthcare costs ###
     df_avg['SUM'] = df_avg.drop(['SEX','AGE'],axis=1).sum(axis=1, skipna=True)
@@ -307,14 +315,6 @@ def plot_numNum(df,featureSet,file):
 def prepare (df, col, name_col, postcode):
     ### Select features you are interested in ###
     ### Feature descriptions are provided by https://www.vektis.nl/intelligence/open-data ###
-    # KOSTEN_MEDISCH_SPECIALISTISCHE_ZORG
-    # col = ["GESLACHT", "AANTAL_BSN","POSTCODE_3","AANTAL_VERZEKERDEJAREN","KOSTEN_MEDISCH_SPECIALISTISCHE_ZORG",\
-    #        "KOSTEN_HUISARTS_INSCHRIJFTARIEF", "KOSTEN_HUISARTS_CONSULT","KOSTEN_HUISARTS_OVERIG", \
-    #        "KOSTEN_FARMACIE", "KOSTEN_MONDZORG", "KOSTEN_ZIEKENVERVOER_ZITTEND", "KOSTEN_ZIEKENVERVOER_LIGGEND", \
-    #        "KOSTEN_GRENSOVERSCHRIJDENDE_ZORG","KOSTEN_PARAMEDISCHE_ZORG_FYSIOTHERAPIE", \
-    #        "KOSTEN_PARAMEDISCHE_ZORG_OVERIG","KOSTEN_OVERIG","KOSTEN_GERIATRISCHE_REVALIDATIEZORG",\
-    #        "KOSTEN_VERPLEGING_EN_VERZORGING","KOSTEN_EERSTELIJNS_PSYCHOLOGISCHE_ZORG","KOSTEN_TWEEDELIJNS_GGZ",\
-    #        "KOSTEN_SPECIALISTISCHE_GGZ","KOSTEN_GENERALISTISCHE_BASIS_GGZ","KOSTEN_LANGDURIGE_GGZ"]
 
     ### As some features are available in some years, we need to check before select certain features ###
     data_col = df.columns
@@ -325,12 +325,6 @@ def prepare (df, col, name_col, postcode):
 
     df_vektis = df[np.array(col)[present]]
 
-    ### Give new columns names which are understandable for yourself ###
-    # medical_specialist
-    # name_col = ["SEX", "BSNs", "Postcode", "Insured_year","medical_specialist", "GP_registration",\
-    #             "GP_consult","GP_others","pharmacy","dental","transport_seat", "transport_land",\
-    #             "abroad","paramedical_phy","paramedical_others", "others","rehabilitation","nursing",\
-    #             "firstLinePsy","secondLineGGZ","specialGGZ","basicGGZ","longGGZ"]
     
     new_col = np.array(name_col)[present]
     df_vektis.columns = new_col
@@ -354,15 +348,14 @@ def prepare (df, col, name_col, postcode):
     df_vektis = df_vektis[1:]
     
     ### search for certain area? ###
-    if postcode == "ALL":
-        df_vektis_analysis = df_vektis
-    elif 100 < postcode and postcode < 1000:
-        df_vektis_analysis = df_vektis[df_vektis['Postcode']==postcode]
-    else:
-        print("Please give a postcode greater than 100 and less than 1000")
-    len(df_vektis_analysis)
+    # if postcode == "ALL":
+    #     df_vektis_analysis = df_vektis
+    # elif 100 < postcode and postcode < 1000:
+    #     df_vektis_analysis = df_vektis[df_vektis['Postcode']==postcode]
+    # else:
+    #     print("Please give a postcode greater than 100 and less than 1000")
     
-    return df_vektis_analysis
+    return df_vektis
 
 
 ##############################################################################
@@ -509,6 +502,8 @@ def CatCost_pivot(df_mean_allYears,ageRange_string,years,categories,one_cate):
             year_plt.append(j)
             if one_cate in df_mean_allYears[i][j].keys():
                 sglCat_plt.append(df_mean_allYears[i][j][one_cate])
+            else:
+                sglCat_plt.append(0)
     #         if '1stPsy2ndGGZ' in df_mean_allYears[i][j].keys():
     #             medSpe_plt.append(df_mean_allYears[i][j]['1stPsy2ndGGZ']) # medical_specialist
     #         elif 'GGZ' in df_mean_allYears[i][j].keys():

@@ -4,10 +4,10 @@ RUN apt-get update && apt-get install -y python-pip
 
 RUN mkdir /output
 
-COPY requestBasicInfo.py requestBasicInfo.py
+COPY analysis_OverYears.py analysis_OverYears.py
 
 COPY func.py func.py
 
 RUN pip install pandas numpy sklearn seaborn bokeh
 
-CMD ["python", "analysis_singleYEAR.py"]
+CMD ["python", "analysis_OverYears.py"]

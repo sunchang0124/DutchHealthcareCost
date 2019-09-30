@@ -3,3 +3,10 @@
 *.sav
 .DS_Store
 *.csv
+*.png
+*.html
+*.ipynb_checkpoints
+*.icon
+output
+Icon?
+Output_Vektis
